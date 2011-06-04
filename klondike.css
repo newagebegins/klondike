@@ -28,7 +28,7 @@ body {
   height: 60px;
 }
 .card {
-  position: absolute;
+  position: absolute !important;
 }
 #placeholder {
   border: none;

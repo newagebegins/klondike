@@ -60,7 +60,7 @@ function handleClick(event) {
     }
   } else if ($(this).is('#draw-pile')) {
     while ($('#discard-pile').hasCards()) {
-      var card = $('#discard-pile .card:last').detach();
+      var card = $('#discard-pile .card').last().detach();
       card.children().attr('src', 'cards/b.gif');
       putCardOnDrawPile(card);
     }
@@ -118,7 +118,7 @@ function checkGameOver() {
 }
 
 function appendTarget(pile) {
-  var element = $(pile + ' .card:last');
+  var element = $(pile + ' .card').last();
   if (!element.length) {
     element = $(pile);
   }
@@ -158,7 +158,7 @@ function putCardOnDiscardPile(card) {
 }
 
 function removeCardFromDrawPile() {
-  var card = $('#draw-pile .card:last');
+  var card = $('#draw-pile .card').last();
   card.detach();
   return card;
 }
@@ -281,7 +281,7 @@ function populateTableauPile(index) {
   for (var i = 0; i < index; i++) {
     putCardOnTableauPile(index, removeCardFromDrawPile());
   }
-  $('#tableau-pile-' + index + ' .card:last').flipUp();
+  $('#tableau-pile-' + index + ' .card').last().flipUp();
 }
 
 function populateTableauPiles() {
