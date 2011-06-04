@@ -14,7 +14,9 @@ $(function () {
   var flipUp = function (card) {
     card.children().attr('src', card.data('src'));
     card.draggable({
-      revert: true,
+      start: function (event, ui) {
+        $(this).draggable('option', 'revert', true);
+      },
       revertDuration: 0,
       zIndex: 100
     });
@@ -30,6 +32,9 @@ $(function () {
                 flipUp($(this).unbind());
               });
             }
+            ui.draggable.draggable('option', 'revert', false);
+            ui.draggable.css('left', '0px');
+            ui.draggable.css('top', '16px');
             ui.draggable.detach().appendTo($(this));
           }
         }
@@ -131,6 +136,10 @@ $(function () {
   };
 
   var putCardOnTableauPile = function (index, card) {
+    if ($('#tableau-pile-' + index + ' .card').length) {
+      card.css('left', '0px');
+      card.css('top', '3px');
+    }
     appendTarget('#tableau-pile-' + index).append(card);
   };
 
