@@ -194,12 +194,18 @@ function createCard(rank, suit, faceUp) {
         event.preventDefault();
         return;
       }
+      $(this).data('oldPositioning', {
+        left: $(this).css('left'),
+        top: $(this).css('top'),
+        zIndex: $(this).css('z-index')
+      })
       $(this).css('z-index', 10);
     },
     stop: function (event, ui) {
-      $(this).css('left', '0px');
-      $(this).css('top', '0px');
-      $(this).css('z-index', 'auto');
+      var oldPositioning = $(this).data('oldPositioning');
+      $(this).css('left', oldPositioning.left);
+      $(this).css('top', oldPositioning.top);
+      $(this).css('z-index', oldPositioning.zIndex);
     }
   });
   card.droppable({
