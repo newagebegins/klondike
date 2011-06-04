@@ -2,7 +2,7 @@ $(function () {
   populateDrawPile();
   populateTableauPiles();
 
-  $('.foundation-pile').droppable({
+  $('.foundation-pile').add('tableau-pile').droppable({
     drop: handleDrop
   });
   $('#draw-pile').click(handleClick);
@@ -14,6 +14,14 @@ $.fn.isInDrawPile = function () {
 
 $.fn.isInTableauPile = function () {
   return $(this).parents('.tableau-pile').length > 0;
+};
+
+$.fn.isInFoundationPile = function () {
+  return $(this).parents('.foundation-pile').length > 0;
+};
+
+$.fn.isInDiscardPile = function () {
+  return $(this).parents('#discard-pile').length > 0;
 };
 
 $.fn.isTop = function () {
@@ -62,40 +70,34 @@ function handleClick(event) {
 }
 
 function handleDrop(event, ui) {
+  ui.draggable.draggable('option', 'revert', false);
+  ui.draggable.css('left', '0px');
+  ui.draggable.css('top', '0px');
+
   if ($(this).is('.card')) {
-    if ($(this).parents('.tableau-pile').length) {
+    if ($(this).isInTableauPile()) {
       if (($(this).data('rank') == ui.draggable.data('rank') + 1) &&
         ($(this).data('color') != ui.draggable.data('color'))) {
-        ui.draggable.draggable('option', 'revert', false);
-        ui.draggable.css('left', '0px');
         ui.draggable.css('top', '16px');
         ui.draggable.detach().appendTo($(this));
       }
-    } else {
+    } else if ($(this).inFoundationPile()) {
       if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
         ($(this).data('suit') == ui.draggable.data('suit'))) {
-        ui.draggable.draggable('option', 'revert', false);
-
         var cardsCount = $(this).parents().length;
-        var left = 0;
-        var top = 0;
-
         if (cardsCount == 5 || cardsCount == 9 || cardsCount == 13) {
-          left = 2;
-          top = 1;
+          ui.draggable.css('left', '2px');
+          ui.draggable.css('top', '1px');
         }
-
-        ui.draggable.css('left', left + 'px');
-        ui.draggable.css('top', top + 'px');
-
         ui.draggable.detach().appendTo($(this));
       }
     }
-  } else {
+  } else if ($(this).is('.foundation-pile')) {
     if (ui.draggable.data('rank') == 1) {
-      ui.draggable.draggable('option', 'revert', false);
-      ui.draggable.css('left', '0px');
-      ui.draggable.css('top', '0px');
+      ui.draggable.detach().appendTo($(this));
+    }
+  } else if ($(this).is('.tableau-pile')) {
+    if (ui.draggable.data('rank') == 13) {
       ui.draggable.detach().appendTo($(this));
     }
   }
@@ -107,30 +109,6 @@ function appendTarget(pile) {
     element = $(pile);
   }
   return element;
-}
-
-function flippedDown(card) {
-  return card.children().attr('src') == 'cards/b.gif';
-}
-
-function flipUp(card) {
-  card.children().attr('src', card.data('src'));
-  card.draggable({
-    start: function (event, ui) {
-      $(this).draggable('option', 'revert', true);
-    },
-    revertDuration: 0,
-    zIndex: 100
-  });
-
-  if (card.parents('.tableau-pile').length) {
-    card.droppable({
-      greedy: true,
-      drop: handleDrop
-    });
-  }
-
-  return card;
 }
 
 function putCardOnDrawPile(card) {
@@ -189,6 +167,20 @@ function createCard(rank, suit, faceUp) {
   card.data('suit', suit);
   card.data('color', suitColor(suit));
   card.click(handleClick);
+  card.draggable({
+    start: function (event, ui) {
+      if ($(this).isFlippedDown() || ($(this).isInDiscardPile() && !$(this).isTop())) {
+        event.preventDefault();
+      }
+      $(this).draggable('option', 'revert', true);
+    },
+    revertDuration: 0,
+    zIndex: 100
+  });
+  card.droppable({
+    greedy: true,
+    drop: handleDrop
+  });
   return card;
 }
 
@@ -249,7 +241,7 @@ function populateTableauPile(index) {
   for (var i = 0; i < index; i++) {
     putCardOnTableauPile(index, removeCardFromDrawPile());
   }
-  flipUp($('#tableau-pile-' + index + ' .card:last'));
+  $('#tableau-pile-' + index + ' .card:last').flipUp();
 }
 
 function populateTableauPiles() {
