@@ -3,8 +3,15 @@ $(function () {
   populateTableauPiles();
 
   $('.foundation-pile').droppable({
-    drop: function (event, ui) {
-      if (ui.draggable.data('rank') == 1) {
+    drop: handleDrop
+  });
+});
+
+function handleDrop(event, ui) {
+  if ($(this).hasClass('card')) {
+    if ($(this).parents('.tableau-pile').length) {
+      if (($(this).data('rank') == ui.draggable.data('rank') + 1) &&
+        ($(this).data('color') != ui.draggable.data('color'))) {
         if (flippedDown(ui.draggable.parent())) {
           ui.draggable.parent().click(function () {
             flipUp($(this).unbind());
@@ -12,12 +19,48 @@ $(function () {
         }
         ui.draggable.draggable('option', 'revert', false);
         ui.draggable.css('left', '0px');
-        ui.draggable.css('top', '0px');
+        ui.draggable.css('top', '16px');
+        ui.draggable.detach().appendTo($(this));
+      }
+    } else {
+      if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
+        ($(this).data('suit') == ui.draggable.data('suit'))) {
+        if (flippedDown(ui.draggable.parent())) {
+          ui.draggable.parent().click(function () {
+            flipUp($(this).unbind());
+          });
+        }
+        ui.draggable.draggable('option', 'revert', false);
+
+        var cardsCount = $(this).parents().length;
+        var left = 0;
+        var top = 0;
+
+        if (cardsCount == 5 || cardsCount == 9 || cardsCount == 13) {
+          left = 2;
+          top = 1;
+        }
+
+        ui.draggable.css('left', left + 'px');
+        ui.draggable.css('top', top + 'px');
+
         ui.draggable.detach().appendTo($(this));
       }
     }
-  });
-});
+  } else {
+    if (ui.draggable.data('rank') == 1) {
+      if (flippedDown(ui.draggable.parent())) {
+        ui.draggable.parent().click(function () {
+          flipUp($(this).unbind());
+        });
+      }
+      ui.draggable.draggable('option', 'revert', false);
+      ui.draggable.css('left', '0px');
+      ui.draggable.css('top', '0px');
+      ui.draggable.detach().appendTo($(this));
+    }
+  }
+}
 
 function appendTarget(pile) {
   var element = $(pile + ' .card:last');
@@ -25,11 +68,11 @@ function appendTarget(pile) {
     element = $(pile);
   }
   return element;
-};
+}
 
 function flippedDown(card) {
   return card.children().attr('src') == 'cards/b.gif';
-};
+}
 
 function flipUp(card) {
   card.children().attr('src', card.data('src'));
@@ -44,51 +87,12 @@ function flipUp(card) {
   if (card.parents('.tableau-pile').length) {
     card.droppable({
       greedy: true,
-      drop: function (event, ui) {
-        if ($(this).parents('.tableau-pile').length) {
-          if (($(this).data('rank') == ui.draggable.data('rank') + 1) &&
-            ($(this).data('color') != ui.draggable.data('color'))) {
-            if (flippedDown(ui.draggable.parent())) {
-              ui.draggable.parent().click(function () {
-                flipUp($(this).unbind());
-              });
-            }
-            ui.draggable.draggable('option', 'revert', false);
-            ui.draggable.css('left', '0px');
-            ui.draggable.css('top', '16px');
-            ui.draggable.detach().appendTo($(this));
-          }
-        } else {
-          if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
-            ($(this).data('suit') == ui.draggable.data('suit'))) {
-            if (flippedDown(ui.draggable.parent())) {
-              ui.draggable.parent().click(function () {
-                flipUp($(this).unbind());
-              });
-            }
-            ui.draggable.draggable('option', 'revert', false);
-
-            var cardsCount = $(this).parents().length;
-            var left = 0;
-            var top = 0;
-
-            if (cardsCount == 5 || cardsCount == 9 || cardsCount == 13) {
-              left = 2;
-              top = 1;
-            }
-
-            ui.draggable.css('left', left + 'px');
-            ui.draggable.css('top', top + 'px');
-
-            ui.draggable.detach().appendTo($(this));
-          }
-        }
-      }
+      drop: handleDrop
     });
   }
 
   return card;
-};
+}
 
 function handleDrawPileClick(event) {
   event.stopPropagation();
@@ -107,7 +111,7 @@ function handleDrawPileClick(event) {
   $(this).detach().appendTo(appendTarget('#discard-pile')).unbind();
   flipUp($(this));
   $(this).parent().draggable('destroy');
-};
+}
 
 function putCardOnDrawPile(card) {
   appendTarget('#draw-pile').append(card);
@@ -125,7 +129,7 @@ function putCardOnDrawPile(card) {
 
   card.css('left', left + 'px');
   card.css('top', top + 'px');
-};
+}
 
 function removeCardFromDrawPile() {
   var card = $('#draw-pile .card:last');
@@ -133,7 +137,7 @@ function removeCardFromDrawPile() {
   card.parent().click(handleDrawPileClick);
   card.detach();
   return card;
-};
+}
 
 function filenameRank(rank) {
   switch (rank) {
@@ -150,14 +154,14 @@ function filenameRank(rank) {
     default:
       return rank;
   }
-};
+}
 
 function suitColor(suit) {
   if (suit == 'h' || suit == 'd') {
     return 'red';
   }
   return 'black';
-};
+}
 
 function createCard(rank, suit, faceUp) {
   faceUp = faceUp || false;
@@ -214,7 +218,7 @@ function populateDrawPile() {
   for (var i = 0; i < deck.length; i++) {
     putCardOnDrawPile(deck[i]);
   }
-};
+}
 
 function putCardOnTableauPile(index, card) {
   if ($('#tableau-pile-' + index + ' .card').length) {
@@ -222,17 +226,17 @@ function putCardOnTableauPile(index, card) {
     card.css('top', '3px');
   }
   appendTarget('#tableau-pile-' + index).append(card);
-};
+}
 
 function populateTableauPile(index) {
   for (var i = 0; i < index; i++) {
     putCardOnTableauPile(index, removeCardFromDrawPile());
   }
   flipUp($('#tableau-pile-' + index + ' .card:last'));
-};
+}
 
 function populateTableauPiles() {
   for (var i = 1; i <= 7; i++) {
     populateTableauPile(i);
   }
-};
+}
