@@ -5,18 +5,67 @@ $(function () {
   $('.foundation-pile').droppable({
     drop: handleDrop
   });
+  $('#draw-pile').click(handleClick);
 });
 
+$.fn.isInDrawPile = function () {
+  return $(this).parents('#draw-pile').length > 0;
+};
+
+$.fn.isInTableauPile = function () {
+  return $(this).parents('.tableau-pile').length > 0;
+};
+
+$.fn.isTop = function () {
+  return $(this).children('.card').length == 0;
+};
+
+$.fn.isFlippedDown = function () {
+  return $(this).children('img').attr('src') == 'cards/b.gif';
+};
+
+$.fn.flipUp = function () {
+  $(this).children('img').attr('src', $(this).data('src'));
+  return $(this);
+};
+
+$.fn.flipDown = function () {
+  $(this).children().attr('src', 'cards/b.gif');
+  return $(this);
+};
+
+$.fn.hasCards = function () {
+  return $(this).children('.card').length > 0;
+};
+
+function handleClick(event) {
+  event.stopPropagation();
+  if ($(this).is('.card')) {
+    if ($(this).isInDrawPile()) {
+      if ($(this).isTop()) {
+        $(this).detach().appendTo(appendTarget('#discard-pile'));
+        $(this).flipUp();
+      }
+    } else if ($(this).isInTableauPile()) {
+      if ($(this).isFlippedDown() && $(this).isTop()) {
+        $(this).flipUp();
+      }
+    }
+  } else if ($(this).is('#draw-pile')) {
+    while ($('#discard-pile').hasCards()) {
+      var card = $('#discard-pile .card:last').detach();
+      card.draggable('option', 'disabled', true);
+      card.children().attr('src', 'cards/b.gif');
+      putCardOnDrawPile(card);
+    }
+  }
+}
+
 function handleDrop(event, ui) {
-  if ($(this).hasClass('card')) {
+  if ($(this).is('.card')) {
     if ($(this).parents('.tableau-pile').length) {
       if (($(this).data('rank') == ui.draggable.data('rank') + 1) &&
         ($(this).data('color') != ui.draggable.data('color'))) {
-        if (flippedDown(ui.draggable.parent())) {
-          ui.draggable.parent().click(function () {
-            flipUp($(this).unbind());
-          });
-        }
         ui.draggable.draggable('option', 'revert', false);
         ui.draggable.css('left', '0px');
         ui.draggable.css('top', '16px');
@@ -25,11 +74,6 @@ function handleDrop(event, ui) {
     } else {
       if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
         ($(this).data('suit') == ui.draggable.data('suit'))) {
-        if (flippedDown(ui.draggable.parent())) {
-          ui.draggable.parent().click(function () {
-            flipUp($(this).unbind());
-          });
-        }
         ui.draggable.draggable('option', 'revert', false);
 
         var cardsCount = $(this).parents().length;
@@ -49,11 +93,6 @@ function handleDrop(event, ui) {
     }
   } else {
     if (ui.draggable.data('rank') == 1) {
-      if (flippedDown(ui.draggable.parent())) {
-        ui.draggable.parent().click(function () {
-          flipUp($(this).unbind());
-        });
-      }
       ui.draggable.draggable('option', 'revert', false);
       ui.draggable.css('left', '0px');
       ui.draggable.css('top', '0px');
@@ -94,29 +133,8 @@ function flipUp(card) {
   return card;
 }
 
-function handleDrawPileClick(event) {
-  event.stopPropagation();
-  if ($(this).parent().is($('#draw-pile'))) {
-    $(this).parent().click(function () {
-      while ($('#discard-pile .card').length) {
-        var card = $('#discard-pile .card:last').detach();
-        card.draggable('destroy');
-        card.children().attr('src', 'cards/b.gif');
-        putCardOnDrawPile(card);
-      }
-    });
-  } else {
-    $(this).parent().click(handleDrawPileClick);
-  }
-  $(this).detach().appendTo(appendTarget('#discard-pile')).unbind();
-  flipUp($(this));
-  $(this).parent().draggable('destroy');
-}
-
 function putCardOnDrawPile(card) {
   appendTarget('#draw-pile').append(card);
-  card.parent().unbind();
-  card.click(handleDrawPileClick);
 
   var cardsCount = $('#draw-pile .card').length;
   var left = 0;
@@ -133,8 +151,6 @@ function putCardOnDrawPile(card) {
 
 function removeCardFromDrawPile() {
   var card = $('#draw-pile .card:last');
-  card.unbind();
-  card.parent().click(handleDrawPileClick);
   card.detach();
   return card;
 }
@@ -172,6 +188,7 @@ function createCard(rank, suit, faceUp) {
   card.data('rank', rank);
   card.data('suit', suit);
   card.data('color', suitColor(suit));
+  card.click(handleClick);
   return card;
 }
 
