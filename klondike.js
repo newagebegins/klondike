@@ -34,7 +34,6 @@ $.fn.isFlippedDown = function () {
 
 $.fn.flipUp = function () {
   $(this).children('img').attr('src', $(this).data('src'));
-  $(this).draggable('option', 'disabled', false);
   return $(this);
 };
 
@@ -52,8 +51,7 @@ function handleClick(event) {
   if ($(this).is('.card')) {
     if ($(this).isInDrawPile()) {
       if ($(this).isTop()) {
-        $(this).detach().appendTo(appendTarget('#discard-pile'));
-        $(this).flipUp();
+        putCardOnDiscardPile($(this));
       }
     } else if ($(this).isInTableauPile()) {
       if ($(this).isFlippedDown() && $(this).isTop()) {
@@ -63,7 +61,6 @@ function handleClick(event) {
   } else if ($(this).is('#draw-pile')) {
     while ($('#discard-pile').hasCards()) {
       var card = $('#discard-pile .card:last').detach();
-      card.draggable('option', 'disabled', true);
       card.children().attr('src', 'cards/b.gif');
       putCardOnDrawPile(card);
     }
@@ -71,7 +68,6 @@ function handleClick(event) {
 }
 
 function handleDrop(event, ui) {
-  ui.draggable.draggable('option', 'revert', false);
   ui.draggable.css('left', '0px');
   ui.draggable.css('top', '0px');
 
@@ -136,6 +132,22 @@ function putCardOnDrawPile(card) {
   card.css('top', top + 'px');
 }
 
+function putCardOnDiscardPile(card) {
+  appendTarget('#discard-pile').append(card.flipUp());
+
+  var cardsCount = $('#discard-pile .card').length;
+  var left = 0;
+  var top = 0;
+
+  if (cardsCount == 11 || cardsCount == 21) {
+    left = 2;
+    top = 1;
+  }
+
+  card.css('left', left + 'px');
+  card.css('top', top + 'px');
+}
+
 function removeCardFromDrawPile() {
   var card = $('#draw-pile .card:last');
   card.detach();
@@ -178,11 +190,17 @@ function createCard(rank, suit, faceUp) {
   card.click(handleClick);
   card.draggable({
     start: function (event, ui) {
-      $(this).draggable('option', 'revert', true);
+      if ($(this).isFlippedDown() || (($(this).isInDiscardPile() || $(this).isInFoundationPile()) && !$(this).isTop())) {
+        event.preventDefault();
+        return;
+      }
+      $(this).css('z-index', 10);
     },
-    revertDuration: 0,
-    zIndex: 100,
-    disabled: true
+    stop: function (event, ui) {
+      $(this).css('left', '0px');
+      $(this).css('top', '0px');
+      $(this).css('z-index', 'auto');
+    }
   });
   card.droppable({
     greedy: true,
