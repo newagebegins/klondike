@@ -68,6 +68,7 @@ function handleClick(event) {
 }
 
 function handleDrop(event, ui) {
+  ui.draggable.data('dropped', true);
   ui.draggable.css('left', '0px');
   ui.draggable.css('top', '0px');
 
@@ -202,10 +203,13 @@ function createCard(rank, suit, faceUp) {
       $(this).css('z-index', 10);
     },
     stop: function (event, ui) {
-      var oldPositioning = $(this).data('oldPositioning');
-      $(this).css('left', oldPositioning.left);
-      $(this).css('top', oldPositioning.top);
-      $(this).css('z-index', oldPositioning.zIndex);
+      if (!$(this).data('dropped')) {
+        $(this).data('dropped', false);
+        var oldPositioning = $(this).data('oldPositioning');
+        $(this).css('left', oldPositioning.left);
+        $(this).css('top', oldPositioning.top);
+        $(this).css('z-index', oldPositioning.zIndex);
+      }
     }
   });
   card.droppable({
