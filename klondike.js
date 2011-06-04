@@ -2,7 +2,7 @@ $(function () {
   populateDrawPile();
   populateTableauPiles();
 
-  $('.foundation-pile').add('tableau-pile').droppable({
+  $('.foundation-pile').add('.tableau-pile').droppable({
     drop: handleDrop
   });
   $('#draw-pile').click(handleClick);
@@ -34,6 +34,7 @@ $.fn.isFlippedDown = function () {
 
 $.fn.flipUp = function () {
   $(this).children('img').attr('src', $(this).data('src'));
+  $(this).draggable('option', 'disabled', false);
   return $(this);
 };
 
@@ -76,12 +77,13 @@ function handleDrop(event, ui) {
 
   if ($(this).is('.card')) {
     if ($(this).isInTableauPile()) {
-      if (($(this).data('rank') == ui.draggable.data('rank') + 1) &&
+      if (!$(this).isFlippedDown() &&
+        ($(this).data('rank') == ui.draggable.data('rank') + 1) &&
         ($(this).data('color') != ui.draggable.data('color'))) {
         ui.draggable.css('top', '16px');
         ui.draggable.detach().appendTo($(this));
       }
-    } else if ($(this).inFoundationPile()) {
+    } else if ($(this).isInFoundationPile()) {
       if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
         ($(this).data('suit') == ui.draggable.data('suit'))) {
         var cardsCount = $(this).parents().length;
@@ -90,6 +92,7 @@ function handleDrop(event, ui) {
           ui.draggable.css('top', '1px');
         }
         ui.draggable.detach().appendTo($(this));
+        checkGameOver();
       }
     }
   } else if ($(this).is('.foundation-pile')) {
@@ -100,6 +103,12 @@ function handleDrop(event, ui) {
     if (ui.draggable.data('rank') == 13) {
       ui.draggable.detach().appendTo($(this));
     }
+  }
+}
+
+function checkGameOver() {
+  if ($('.foundation-pile .card').length == 52) {
+    alert('Game Over!');
   }
 }
 
@@ -169,13 +178,11 @@ function createCard(rank, suit, faceUp) {
   card.click(handleClick);
   card.draggable({
     start: function (event, ui) {
-      if ($(this).isFlippedDown() || ($(this).isInDiscardPile() && !$(this).isTop())) {
-        event.preventDefault();
-      }
       $(this).draggable('option', 'revert', true);
     },
     revertDuration: 0,
-    zIndex: 100
+    zIndex: 100,
+    disabled: true
   });
   card.droppable({
     greedy: true,
