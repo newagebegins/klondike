@@ -1,0 +1,35 @@
+.row {
+  min-width: 511px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+.movers {
+  margin: -97px 0 0 73px;
+}
+.movers > div {
+  width: 16.66%;
+  float: left;
+  min-width: 73px;
+}
+.movers > div > div {
+  float: right;
+}
+.pile {
+  width: 73px;
+  height: 97px;
+  border: 1px inset black;
+  position: relative;
+}
+#separator {
+  clear: both;
+  height: 60px;
+}
+.card {
+  position: absolute;
+}
+#empty {
+  background-color: gold;
+}
+#placeholder {
+  border: none;
+}
