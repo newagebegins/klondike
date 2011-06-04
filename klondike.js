@@ -69,14 +69,16 @@ function handleClick(event) {
 
 function handleDrop(event, ui) {
   ui.draggable.data('dropped', true);
-  ui.draggable.css('left', '0px');
-  ui.draggable.css('top', '0px');
+  ui.draggable.css('left', ui.draggable.data('oldLeft'));
+  ui.draggable.css('top', ui.draggable.data('oldTop'));
+  ui.draggable.css('z-index', ui.draggable.data('oldZIndex'));
 
   if ($(this).is('.card')) {
     if ($(this).isInTableauPile()) {
       if (!$(this).isFlippedDown() &&
         ($(this).data('rank') == ui.draggable.data('rank') + 1) &&
         ($(this).data('color') != ui.draggable.data('color'))) {
+        ui.draggable.css('left', '0px');
         ui.draggable.css('top', '16px');
         ui.draggable.detach().appendTo($(this));
       }
@@ -84,6 +86,8 @@ function handleDrop(event, ui) {
       if (($(this).data('rank') == ui.draggable.data('rank') - 1) &&
         ($(this).data('suit') == ui.draggable.data('suit'))) {
         var cardsCount = $(this).parents().length;
+        ui.draggable.css('left', '0px');
+        ui.draggable.css('top', '0px');
         if (cardsCount == 5 || cardsCount == 9 || cardsCount == 13) {
           ui.draggable.css('left', '2px');
           ui.draggable.css('top', '1px');
@@ -94,10 +98,14 @@ function handleDrop(event, ui) {
     }
   } else if ($(this).is('.foundation-pile')) {
     if (ui.draggable.data('rank') == 1) {
+      ui.draggable.css('left', '0px');
+      ui.draggable.css('top', '0px');
       ui.draggable.detach().appendTo($(this));
     }
   } else if ($(this).is('.tableau-pile')) {
     if (ui.draggable.data('rank') == 13) {
+      ui.draggable.css('left', '0px');
+      ui.draggable.css('top', '0px');
       ui.draggable.detach().appendTo($(this));
     }
   }
@@ -195,21 +203,18 @@ function createCard(rank, suit, faceUp) {
         event.preventDefault();
         return;
       }
-      $(this).data('oldPositioning', {
-        left: $(this).css('left'),
-        top: $(this).css('top'),
-        zIndex: $(this).css('z-index')
-      })
+      $(this).data('oldLeft', $(this).css('left'));
+      $(this).data('oldTop', $(this).css('top'));
+      $(this).data('oldZIndex', $(this).css('z-index'));
       $(this).css('z-index', 10);
     },
     stop: function (event, ui) {
       if (!$(this).data('dropped')) {
-        $(this).data('dropped', false);
-        var oldPositioning = $(this).data('oldPositioning');
-        $(this).css('left', oldPositioning.left);
-        $(this).css('top', oldPositioning.top);
-        $(this).css('z-index', oldPositioning.zIndex);
+        $(this).css('left', $(this).data('oldLeft'));
+        $(this).css('top', $(this).data('oldTop'));
+        $(this).css('z-index', $(this).data('oldZIndex'));
       }
+      $(this).data('dropped', false);
     }
   });
   card.droppable({
