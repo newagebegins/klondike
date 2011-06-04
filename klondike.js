@@ -124,14 +124,48 @@ $(function () {
     return card;
   }
 
-  var populateDrawPile = function () {
+  // Returns a random integer between min and max
+  // Using Math.round() will give you a non-uniform distribution!
+  function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  var createDeck = function (shuffle) {
+    shuffle = shuffle || false;
+
+    var deck = [];
     var ranks = [1, 2, 3, 4 ,5 ,6, 7, 8, 9, 10, 11, 12, 13];
     var suits = ['h', 's', 'd', 'c'];
 
     for (var rank in ranks) {
       for (var suit in suits) {
-        putCardOnDrawPile(createCard(ranks[rank], suits[suit]));
+        deck.push(createCard(ranks[rank], suits[suit]));
       }
+    }
+
+    if (shuffle) {
+      var movesCount = 500;
+
+      for (var i = 0; i < movesCount; i++) {
+        var card1 = getRandomInt(0, deck.length - 1);
+        var card2 = getRandomInt(0, deck.length - 1);
+
+        if (card1 != card2) {
+          var temp = deck[card1];
+          deck[card1] = deck[card2];
+          deck[card2] = temp;
+        }
+      }
+    }
+
+    return deck;
+  }
+
+  var populateDrawPile = function () {
+    var deck = createDeck(true);
+
+    for (var i = 0; i < deck.length; i++) {
+      putCardOnDrawPile(deck[i]);
     }
   };
 
@@ -159,12 +193,12 @@ $(function () {
   populateDrawPile();
   populateTableauPiles();
 
-//  putCardOnTableauPile(1, createCard(2, 'c'));
-//  putCardOnTableauPile(1, createCard(3, 'h'));
-//  putCardOnTableauPile(1, createCard(4, 's'));
-//  putCardOnTableauPile(1, createCard(5, 'h'));
-//  flipUp($('#tableau-pile-1 .card:last'));
-//
-//  putCardOnTableauPile(2, createCard(6, 's'));
-//  flipUp($('#tableau-pile-2 .card:last'));
+  //  putCardOnTableauPile(1, createCard(2, 'c'));
+  //  putCardOnTableauPile(1, createCard(3, 'h'));
+  //  putCardOnTableauPile(1, createCard(4, 's'));
+  //  putCardOnTableauPile(1, createCard(5, 'h'));
+  //  flipUp($('#tableau-pile-1 .card:last'));
+  //
+  //  putCardOnTableauPile(2, createCard(6, 's'));
+  //  flipUp($('#tableau-pile-2 .card:last'));
 });

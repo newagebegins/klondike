@@ -1,3 +1,6 @@
+body {
+  background-color: darkgreen;
+}
 .row {
   min-width: 511px;
   max-width: 1000px;
@@ -27,9 +30,9 @@
 .card {
   position: absolute;
 }
-#empty {
-  background-color: gold;
-}
 #placeholder {
   border: none;
+}
+#draw-pile {
+  background-color: gold;
 }
