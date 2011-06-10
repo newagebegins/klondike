@@ -8,6 +8,66 @@ $(function () {
   $('#draw-pile').click(handleClick);
 });
 
+function populateDrawPile() {
+  var deck = createDeck(true);
+
+  for (var i = 0; i < deck.length; i++) {
+    putCardOnDrawPile(deck[i]);
+  }
+}
+
+function createDeck(shuffle) {
+  shuffle = shuffle || false;
+
+  var deck = [];
+  var ranks = [1, 2, 3, 4 ,5 ,6, 7, 8, 9, 10, 11, 12, 13];
+  var suits = ['h', 's', 'd', 'c'];
+
+  for (var rank in ranks) {
+    for (var suit in suits) {
+      deck.push(createCard(ranks[rank], suits[suit]));
+    }
+  }
+
+  if (shuffle) {
+    var movesCount = 500;
+
+    for (var i = 0; i < movesCount; i++) {
+      var card1 = getRandomInt(0, deck.length - 1);
+      var card2 = getRandomInt(0, deck.length - 1);
+
+      if (card1 != card2) {
+        var temp = deck[card1];
+        deck[card1] = deck[card2];
+        deck[card2] = temp;
+      }
+    }
+  }
+
+  return deck;
+}
+
+function populateTableauPiles() {
+  for (var i = 1; i <= 7; i++) {
+    populateTableauPile(i);
+  }
+}
+
+function populateTableauPile(index) {
+  for (var i = 0; i < index; i++) {
+    putCardOnTableauPile(index, removeCardFromDrawPile());
+  }
+  $('#tableau-pile-' + index + ' .card').last().flipUp();
+}
+
+function putCardOnTableauPile(index, card) {
+  if ($('#tableau-pile-' + index + ' .card').length) {
+    card.css('left', '0px');
+    card.css('top', '3px');
+  }
+  appendTarget('#tableau-pile-' + index).append(card);
+}
+
 $.fn.isInDrawPile = function () {
   return $(this).parents('#draw-pile').length > 0;
 };
@@ -228,64 +288,4 @@ function createCard(rank, suit, faceUp) {
 // Using Math.round() will give you a non-uniform distribution!
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function createDeck(shuffle) {
-  shuffle = shuffle || false;
-
-  var deck = [];
-  var ranks = [1, 2, 3, 4 ,5 ,6, 7, 8, 9, 10, 11, 12, 13];
-  var suits = ['h', 's', 'd', 'c'];
-
-  for (var rank in ranks) {
-    for (var suit in suits) {
-      deck.push(createCard(ranks[rank], suits[suit]));
-    }
-  }
-
-  if (shuffle) {
-    var movesCount = 500;
-
-    for (var i = 0; i < movesCount; i++) {
-      var card1 = getRandomInt(0, deck.length - 1);
-      var card2 = getRandomInt(0, deck.length - 1);
-
-      if (card1 != card2) {
-        var temp = deck[card1];
-        deck[card1] = deck[card2];
-        deck[card2] = temp;
-      }
-    }
-  }
-
-  return deck;
-}
-
-function populateDrawPile() {
-  var deck = createDeck(true);
-
-  for (var i = 0; i < deck.length; i++) {
-    putCardOnDrawPile(deck[i]);
-  }
-}
-
-function putCardOnTableauPile(index, card) {
-  if ($('#tableau-pile-' + index + ' .card').length) {
-    card.css('left', '0px');
-    card.css('top', '3px');
-  }
-  appendTarget('#tableau-pile-' + index).append(card);
-}
-
-function populateTableauPile(index) {
-  for (var i = 0; i < index; i++) {
-    putCardOnTableauPile(index, removeCardFromDrawPile());
-  }
-  $('#tableau-pile-' + index + ' .card').last().flipUp();
-}
-
-function populateTableauPiles() {
-  for (var i = 1; i <= 7; i++) {
-    populateTableauPile(i);
-  }
 }
